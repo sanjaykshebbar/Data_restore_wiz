@@ -22,7 +22,7 @@ Run the application instantly without manually cloning or keeping files on your 
 Copy and paste this into PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/sanjaykshebbar/Data_restore_wiz/main/run_ephemeral.ps1 | iex
+irm https://raw.githubusercontent.com/sanjaykshebbar/Data_restore_wiz/main/start.ps1 | iex
 ```
 
 *Note: You may need to run `Set-ExecutionPolicy RemoteSigned -Scope Process` if scripts are disabled.*
@@ -34,7 +34,7 @@ irm https://raw.githubusercontent.com/sanjaykshebbar/Data_restore_wiz/main/run_e
 Copy and paste this into your Terminal:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/sanjaykshebbar/Data_restore_wiz/main/run_ephemeral.sh | bash
+curl -sL https://raw.githubusercontent.com/sanjaykshebbar/Data_restore_wiz/main/start.sh | bash
 ```
 </details>
 
