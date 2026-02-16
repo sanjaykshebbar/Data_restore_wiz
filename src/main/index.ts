@@ -6,9 +6,11 @@ import { IPC_CHANNELS } from '../shared/constants'
 import { DiscoveryService } from './discovery'
 import { BackupServer } from './server'
 import { BackupClient } from './client'
+import { ScannerService } from './scanner'
 
 let mainWindow: BrowserWindow
 const discovery = new DiscoveryService()
+const scanner = new ScannerService()
 let server: BackupServer | null = null
 let client: BackupClient | null = null
 
@@ -80,6 +82,17 @@ app.whenReady().then(() => {
       client = new BackupClient(mainWindow)
     }
     client.connect(ip, 1234)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GET_SYSTEM_DATA, async () => {
+    console.log('Scanning system data...')
+    try {
+      const data = await scanner.scanSystem()
+      return data
+    } catch (err) {
+      console.error('Scan error:', err)
+      return { apps: [], folders: [] }
+    }
   })
 
   createWindow()

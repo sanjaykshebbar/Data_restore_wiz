@@ -7,4 +7,5 @@ export const IPC_CHANNELS = {
   SCAN_RESULTS: 'scan-results',
   TRANSFER_PROGRESS: 'transfer-progress',
   LOG_MESSAGE: 'log-message',
+  GET_SYSTEM_DATA: 'get-system-data',
 };

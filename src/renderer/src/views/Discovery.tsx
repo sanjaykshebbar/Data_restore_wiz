@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Monitor } from 'lucide-react';
+import { Search, Monitor, ArrowRight } from 'lucide-react';
 
 interface Peer {
     name: string;
@@ -12,6 +12,8 @@ interface Peer {
 const Discovery = () => {
     const [peers, setPeers] = useState<Peer[]>([]);
     const [searching, setSearching] = useState(true);
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [manualIp, setManualIp] = useState('');
 
     useEffect(() => {
         window.api.startScan();
@@ -25,6 +27,8 @@ const Discovery = () => {
     }, []);
 
     const connectTo = (ip: string) => {
+        if (!ip) return;
+        console.log(`Connecting to ${ip}...`);
         window.api.connectToServer(ip);
         // Navigate to transfer screen todo
     };
@@ -75,9 +79,38 @@ const Discovery = () => {
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-700">
-                <button className="text-sm text-gray-400 hover:text-white underline">
-                    Enter IP Manually
-                </button>
+                {!showManualInput ? (
+                    <button
+                        onClick={() => setShowManualInput(true)}
+                        className="text-sm text-gray-400 hover:text-white underline"
+                    >
+                        Enter IP Manually
+                    </button>
+                ) : (
+                    <div className="flex items-center space-x-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <input
+                            type="text"
+                            placeholder="192.168.1.x"
+                            value={manualIp}
+                            onChange={(e) => setManualIp(e.target.value)}
+                            className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                            onKeyDown={(e) => e.key === 'Enter' && connectTo(manualIp)}
+                        />
+                        <button
+                            onClick={() => connectTo(manualIp)}
+                            disabled={!manualIp}
+                            className="p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <ArrowRight size={18} />
+                        </button>
+                        <button
+                            onClick={() => setShowManualInput(false)}
+                            className="text-xs text-gray-500 hover:text-gray-300 ml-2"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

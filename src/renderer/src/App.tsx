@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import Home from './views/Home';
 import ServerWait from './views/ServerWait';
 import Discovery from './views/Discovery';
+import FileSelection from './views/FileSelection';
 
 function App(): JSX.Element {
   return (
@@ -20,6 +21,7 @@ function App(): JSX.Element {
               <Route path="/" element={<Home />} />
               <Route path="/server-wait" element={<ServerWait />} />
               <Route path="/discovery" element={<Discovery />} />
+              <Route path="/file-selection" element={<FileSelection />} />
             </Routes>
           </main>
         </div>

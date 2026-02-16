@@ -8,6 +8,7 @@ const api = {
   startScan: (): void => ipcRenderer.send(IPC_CHANNELS.START_Scan),
   startServer: (): void => ipcRenderer.send(IPC_CHANNELS.START_SERVER),
   connectToServer: (ip: string): void => ipcRenderer.send(IPC_CHANNELS.CONNECT_TO_SERVER, ip),
+  getSystemData: (): Promise<any> => ipcRenderer.invoke(IPC_CHANNELS.GET_SYSTEM_DATA),
   sendFile: (filePath: string): void => ipcRenderer.send(IPC_CHANNELS.SEND_FILE, filePath),
   onScanResults: (callback: (data: any) => void): void => {
     ipcRenderer.on(IPC_CHANNELS.SCAN_RESULTS, (_, data) => callback(data))

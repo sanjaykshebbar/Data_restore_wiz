@@ -8,6 +8,7 @@ declare global {
       startScan: () => void
       startServer: () => void
       connectToServer: (ip: string) => void
+      getSystemData: () => Promise<{ apps: any[], folders: any[] }>
       sendFile: (filePath: string) => void
       onScanResults: (callback: (data: any) => void) => void
       onTransferProgress: (callback: (data: any) => void) => void
