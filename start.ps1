@@ -8,7 +8,7 @@ $LogPath = Join-Path ([Environment]::GetFolderPath("Desktop")) "DataRestoreWiz_L
 
 Clear-Host
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "   🧙‍♂️ Data Restore Wiz - Zero Trace Launcher" -ForegroundColor Yellow
+Write-Host "   Data Restore Wiz - Zero Trace Launcher" -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -30,38 +30,38 @@ $null = Read-Host
 
 # 1. Cleanup previous runs
 if (Test-Path $TempDir) {
-    Write-Host "🧹 Cleaning up previous temp files..." -ForegroundColor Gray
+    Write-Host "Cleaning up previous temp files..." -ForegroundColor Gray
     Remove-Item -Recurse -Force $TempDir
 }
 
 # 2. Clone Repository
-Write-Host "📦 Cloning repository..." -ForegroundColor Cyan
+Write-Host "Cloning repository..." -ForegroundColor Cyan
 New-Item -ItemType Directory -Force -Path $TempDir | Out-Null
 git clone $RepoUrl $TempDir
 
 if (-not $?) {
-    Write-Host "❌ Failed to clone repository." -ForegroundColor Red
+    Write-Host "Failed to clone repository." -ForegroundColor Red
     exit 1
 }
 
 # 3. Install Dependencies
 Set-Location $TempDir
-Write-Host "📥 Installing dependencies (Node.js required)..." -ForegroundColor Cyan
+Write-Host "Installing dependencies (Node.js required)..." -ForegroundColor Cyan
 npm install
 
 if (-not $?) {
-    Write-Host "❌ Failed to install dependencies. Is Node.js installed?" -ForegroundColor Red
+    Write-Host "Failed to install dependencies. Is Node.js installed?" -ForegroundColor Red
     exit 1
 }
 
 # 4. Run Application
-Write-Host "▶️  Launching Application..." -ForegroundColor Green
-Write-Host "ℹ️  Close the application window to finish and clean up." -ForegroundColor Gray
+Write-Host "Launching Application..." -ForegroundColor Green
+Write-Host "Close the application window to finish and clean up." -ForegroundColor Gray
 npm run dev
 
 # 5. Cleanup
 Set-Location $env:TEMP
-Write-Host "🧹 Cleaning up project files (Zero Trace)..." -ForegroundColor Yellow
+Write-Host "Cleaning up project files (Zero Trace)..." -ForegroundColor Yellow
 Remove-Item -Recurse -Force $TempDir
 
-Write-Host "✅ Cleanup complete. Log file (if generated) should be at: $LogPath" -ForegroundColor Green
+Write-Host "Cleanup complete. Log file (if generated) should be at: $LogPath" -ForegroundColor Green
