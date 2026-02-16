@@ -13,14 +13,14 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Permission Explanation
-Write-Host "⚠️  PERMISSIONS REQUIRED" -ForegroundColor Red
+Write-Host "PERMISSIONS REQUIRED" -ForegroundColor Red
 Write-Host "To function correctly, this tool needs the following permissions:" -ForegroundColor White
 Write-Host ""
-Write-Host "1. 🌐 Network Access (Firewall)" -ForegroundColor Green
+Write-Host "1. Network Access (Firewall)" -ForegroundColor Green
 Write-Host "   - Reason: To discover other computers on this Local Network (mDNS) and transfer files."
 Write-Host "   - Action: If Windows Firewall prompts you, please check 'Private networks' and click 'Allow access'."
 Write-Host ""
-Write-Host "2. 📂 File Access" -ForegroundColor Green
+Write-Host "2. File Access" -ForegroundColor Green
 Write-Host "   - Reason: To read files from your User folders (Documents, Desktop, etc.) for backup."
 Write-Host "   - Action: The script runs with your current user privileges. No extra action needed."
 Write-Host ""
