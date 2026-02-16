@@ -65,8 +65,7 @@ const FileSelection = () => {
         .reduce((acc, curr) => acc + curr.size, 0);
 
     const startBackup = () => {
-        // TODO: Send selection to backend and start transfer
-        console.log('Starting backup...');
+        navigate('/transfer', { state: { apps, folders } });
     };
 
     if (loading) {
@@ -107,8 +106,8 @@ const FileSelection = () => {
                                     key={app.name}
                                     onClick={() => toggleApp(idx)}
                                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${app.selected
-                                            ? 'bg-blue-500/10 border-blue-500/50'
-                                            : 'bg-gray-800 border-gray-700 hover:border-gray-600'
+                                        ? 'bg-blue-500/10 border-blue-500/50'
+                                        : 'bg-gray-800 border-gray-700 hover:border-gray-600'
                                         }`}
                                 >
                                     <div className="flex items-center space-x-3">
@@ -137,8 +136,8 @@ const FileSelection = () => {
                                 key={folder.name}
                                 onClick={() => toggleFolder(idx)}
                                 className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${folder.selected
-                                        ? 'bg-purple-500/10 border-purple-500/50'
-                                        : 'bg-gray-800 border-gray-700 hover:border-gray-600'
+                                    ? 'bg-purple-500/10 border-purple-500/50'
+                                    : 'bg-gray-800 border-gray-700 hover:border-gray-600'
                                     }`}
                             >
                                 <div className="flex items-center space-x-3">

@@ -95,6 +95,12 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle(IPC_CHANNELS.START_BACKUP, async (_event, { apps, folders }) => {
+     if (client) {
+         client.startBackup(apps, folders)
+     }
+  })
+
   createWindow()
 
   app.on('activate', function () {

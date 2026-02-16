@@ -8,4 +8,28 @@ export const IPC_CHANNELS = {
   TRANSFER_PROGRESS: 'transfer-progress',
   LOG_MESSAGE: 'log-message',
   GET_SYSTEM_DATA: 'get-system-data',
+  START_BACKUP: 'start-backup',
 };
+
+export interface FileHeader {
+  viewPath: string; // Relative path for display/restore
+  originalPath: string;
+  size: number;
+  type: 'file' | 'directory';
+}
+
+export interface BackupItem {
+    name: string;
+    path: string;
+    size: number;
+    selected: boolean;
+}
+
+export interface TransferStatus {
+  currentFile: string;
+  totalFiles: number;
+  filesProcessed: number;
+  totalBytes: number;
+  bytesProcessed: number;
+  speed: number; // bytes per second
+}

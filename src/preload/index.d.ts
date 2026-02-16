@@ -9,6 +9,7 @@ declare global {
       startServer: () => void
       connectToServer: (ip: string) => void
       getSystemData: () => Promise<{ apps: any[], folders: any[] }>
+      startBackup: (apps: any[], folders: any[]) => Promise<void>
       sendFile: (filePath: string) => void
       onScanResults: (callback: (data: any) => void) => void
       onTransferProgress: (callback: (data: any) => void) => void

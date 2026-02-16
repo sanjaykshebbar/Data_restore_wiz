@@ -4,6 +4,8 @@ import ServerWait from './views/ServerWait';
 import Discovery from './views/Discovery';
 import FileSelection from './views/FileSelection';
 
+import Transfer from './views/Transfer';
+
 function App(): JSX.Element {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans selection:bg-blue-500 selection:text-white">
@@ -22,6 +24,7 @@ function App(): JSX.Element {
               <Route path="/server-wait" element={<ServerWait />} />
               <Route path="/discovery" element={<Discovery />} />
               <Route path="/file-selection" element={<FileSelection />} />
+              <Route path="/transfer" element={<Transfer />} />
             </Routes>
           </main>
         </div>
