@@ -2,7 +2,7 @@
 set -e
 
 # Configuration
-REPO_URL="YOUR_GITHUB_REPO_URL_HERE"
+REPO_URL="https://github.com/sanjaykshebbar/Data_restore_wiz.git"
 APP_NAME="Data_restore_wiz"
 TEMP_DIR="/tmp/$APP_NAME"
 LOG_PATH="$HOME/Desktop/DataRestoreWiz_Log.txt"

@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$RepoUrl = "YOUR_GITHUB_REPO_URL_HERE" # User must replace this or we inject it
+$RepoUrl = "https://github.com/sanjaykshebbar/Data_restore_wiz.git"
 $AppName = "Data_restore_wiz"
 $TempDir = Join-Path $env:TEMP $AppName
 $LogPath = Join-Path ([Environment]::GetFolderPath("Desktop")) "DataRestoreWiz_Log.txt"
