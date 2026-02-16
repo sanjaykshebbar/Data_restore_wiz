@@ -13,7 +13,7 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Permission Explanation
-Write-Host "⚠️  PERMISSIONS REQUIRED" -ForegroundColor RegExp
+Write-Host "⚠️  PERMISSIONS REQUIRED" -ForegroundColor Red
 Write-Host "To function correctly, this tool needs the following permissions:" -ForegroundColor White
 Write-Host ""
 Write-Host "1. 🌐 Network Access (Firewall)" -ForegroundColor Green
