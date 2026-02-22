@@ -111,10 +111,6 @@ app.whenReady().then(() => {
     return machineInfo.getMachineInfo()
   })
 
-  ipcMain.handle(IPC_CHANNELS.GET_MACHINE_INFO, async () => {
-    return machineInfo.getMachineInfo()
-  })
-
   createWindow()
 
   app.on('activate', function () {
