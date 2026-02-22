@@ -24,6 +24,7 @@ export class BackupClient {
     this.socket.connect(port, ip, () => {
       console.log('Connected to server')
       this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Connected to receiver at ${ip}`)
+      this.window?.webContents.send(IPC_CHANNELS.CONNECTION_SUCCESS)
     })
 
     this.socket.on('data', (data) => {

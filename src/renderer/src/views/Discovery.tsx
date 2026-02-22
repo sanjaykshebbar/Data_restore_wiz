@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Search, Monitor, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Peer {
     name: string;
@@ -10,6 +11,7 @@ interface Peer {
 }
 
 const Discovery = () => {
+    const navigate = useNavigate();
     const [peers, setPeers] = useState<Peer[]>([]);
     const [searching, setSearching] = useState(true);
     const [showManualInput, setShowManualInput] = useState(false);
@@ -23,6 +25,11 @@ const Discovery = () => {
                 if (prev.some(p => p.name === service.name)) return prev;
                 return [...prev, service];
             });
+        });
+
+        window.api.onConnectionSuccess(() => {
+            console.log('Connection successful, navigating to file selection...');
+            navigate('/file-selection');
         });
     }, []);
 

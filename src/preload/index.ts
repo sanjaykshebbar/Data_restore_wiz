@@ -19,6 +19,9 @@ const api = {
   },
   onLogMessage: (callback: (msg: string) => void): void => {
     ipcRenderer.on(IPC_CHANNELS.LOG_MESSAGE, (_, msg) => callback(msg))
+  },
+  onConnectionSuccess: (callback: () => void): void => {
+    ipcRenderer.on(IPC_CHANNELS.CONNECTION_SUCCESS, () => callback())
   } 
 }
 

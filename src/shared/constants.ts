@@ -9,6 +9,7 @@ export const IPC_CHANNELS = {
   LOG_MESSAGE: 'log-message',
   GET_SYSTEM_DATA: 'get-system-data',
   START_BACKUP: 'start-backup',
+  CONNECTION_SUCCESS: 'connection-success',
 };
 
 export interface FileHeader {

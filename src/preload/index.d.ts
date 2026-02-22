@@ -14,6 +14,7 @@ declare global {
       onScanResults: (callback: (data: any) => void) => void
       onTransferProgress: (callback: (data: any) => void) => void
       onLogMessage: (callback: (msg: string) => void) => void
+      onConnectionSuccess: (callback: () => void) => void
     }
   }
 }
