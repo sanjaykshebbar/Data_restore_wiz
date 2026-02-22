@@ -22,7 +22,8 @@ const api = {
   },
   onConnectionSuccess: (callback: () => void): void => {
     ipcRenderer.on(IPC_CHANNELS.CONNECTION_SUCCESS, () => callback())
-  } 
+  },
+  getMachineInfo: () => ipcRenderer.invoke(IPC_CHANNELS.GET_MACHINE_INFO),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

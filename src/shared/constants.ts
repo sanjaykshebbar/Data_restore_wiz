@@ -10,6 +10,8 @@ export const IPC_CHANNELS = {
   GET_SYSTEM_DATA: 'get-system-data',
   START_BACKUP: 'start-backup',
   CONNECTION_SUCCESS: 'connection-success',
+  GET_MACHINE_INFO: 'get-machine-info',
+  SESSION_START: 'session-start',
 };
 
 export interface FileHeader {
@@ -33,4 +35,13 @@ export interface TransferStatus {
   totalBytes: number;
   bytesProcessed: number;
   speed: number; // bytes per second
+}
+
+export interface MachineInfo {
+  hostname: string;
+  username: string;
+  userType: 'Admin' | 'Standard';
+  ipAddress: string;
+  os: string;
+  osVersion: string;
 }

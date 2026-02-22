@@ -98,6 +98,18 @@ export class BackupClient {
       this.totalFiles = fileList.length
       this.filesProcessed = 0
       this.bytesProcessed = 0
+      
+      // Send Session Start header
+      const sessionHeader = {
+          type: 'SESSION_START',
+          totalFiles: this.totalFiles,
+          totalBytes: this.totalBytes
+      }
+      const sessionHeaderBuf = Buffer.from(JSON.stringify(sessionHeader))
+      const sessionLenBuf = Buffer.alloc(4)
+      sessionLenBuf.writeUInt32BE(sessionHeaderBuf.length, 0)
+      this.socket.write(sessionLenBuf)
+      this.socket.write(sessionHeaderBuf)
       this.startTime = Date.now()
 
       console.log(`Found ${this.totalFiles} files, ${this.totalBytes} bytes`)

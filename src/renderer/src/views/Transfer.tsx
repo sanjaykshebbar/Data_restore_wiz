@@ -106,6 +106,7 @@ const Transfer = () => {
 
             {/* Logs */}
             <div className="bg-black/30 rounded-lg p-4 font-mono text-xs text-green-400 h-32 overflow-hidden border border-gray-700">
+                {logs.length === 0 && <div className="italic opacity-50">Waiting for transfer log...</div>}
                 {logs.map((log, i) => (
                     <div key={i}>{log}</div>
                 ))}

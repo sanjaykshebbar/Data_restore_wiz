@@ -154,6 +154,16 @@ const FileSelection = () => {
                 </section>
             </div>
 
+            {/* Note Panel */}
+            <div className="mt-8 p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg flex items-start space-x-3">
+                <Info className="text-blue-400 shrink-0 mt-0.5" size={20} />
+                <div className="text-sm text-blue-200/80 leading-relaxed">
+                    <p className="font-semibold text-blue-300 mb-1">Important Note for Application Data:</p>
+                    For Application data (App config data) to be restored correctly, the corresponding application should be installed on your new machine before starting this process.
+                    <span className="block mt-1 italic opacity-75 text-xs">Note: This works only for backups between the same platform (e.g., Windows to Windows).</span>
+                </div>
+            </div>
+
             <div className="pt-4 border-t border-gray-700 flex justify-end">
                 <button
                     onClick={startBackup}

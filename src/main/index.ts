@@ -7,10 +7,12 @@ import { DiscoveryService } from './discovery'
 import { BackupServer } from './server'
 import { BackupClient } from './client'
 import { ScannerService } from './scanner'
+import { MachineInfoService } from './MachineInfoService'
 
 let mainWindow: BrowserWindow
 const discovery = new DiscoveryService()
 const scanner = new ScannerService()
+const machineInfo = new MachineInfoService()
 let server: BackupServer | null = null
 let client: BackupClient | null = null
 
@@ -103,6 +105,14 @@ app.whenReady().then(() => {
          }
          await client.startBackup(apps, folders)
      }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GET_MACHINE_INFO, async () => {
+    return machineInfo.getMachineInfo()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GET_MACHINE_INFO, async () => {
+    return machineInfo.getMachineInfo()
   })
 
   createWindow()

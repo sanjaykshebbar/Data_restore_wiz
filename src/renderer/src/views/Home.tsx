@@ -1,11 +1,54 @@
 import { useNavigate } from 'react-router-dom';
-import { Server, MonitorSmartphone } from 'lucide-react';
+import { Server, MonitorSmartphone, Shield, User, Monitor, Laptop, Info } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MachineInfo } from '../../../shared/constants';
 
 const Home = () => {
     const navigate = useNavigate();
+    const [info, setInfo] = useState<MachineInfo | null>(null);
+
+    useEffect(() => {
+        window.api.getMachineInfo().then(setInfo);
+    }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center space-y-8 py-10">
+        <div className="flex flex-col items-center space-y-8 py-4">
+            {/* System Info Panel */}
+            {info && (
+                <div className="w-full max-w-2xl bg-gray-800/50 border border-gray-700 rounded-xl p-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
+                    <div className="flex items-center space-x-2 text-gray-300">
+                        <Monitor size={16} className="text-blue-400" />
+                        <span className="font-semibold">Host:</span>
+                        <span className="truncate">{info.hostname}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-300">
+                        <User size={16} className="text-purple-400" />
+                        <span className="font-semibold">User:</span>
+                        <span>{info.username}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-300">
+                        <Shield size={16} className={info.userType === 'Admin' ? 'text-green-400' : 'text-yellow-400'} />
+                        <span className="font-semibold">Type:</span>
+                        <span>{info.userType}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-300">
+                        <Info size={16} className="text-blue-400" />
+                        <span className="font-semibold">IP:</span>
+                        <span>{info.ipAddress}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-300">
+                        <Laptop size={16} className="text-purple-400" />
+                        <span className="font-semibold">OS:</span>
+                        <span>{info.os}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-gray-300 col-span-1 md:col-span-1">
+                        <Monitor size={16} className="text-gray-400" />
+                        <span className="font-semibold">Ver:</span>
+                        <span className="truncate text-xs">{info.osVersion}</span>
+                    </div>
+                </div>
+            )}
+
             <h2 className="text-xl font-medium text-gray-300">Select Machine Role</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">

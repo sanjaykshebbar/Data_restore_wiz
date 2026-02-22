@@ -15,6 +15,7 @@ declare global {
       onTransferProgress: (callback: (data: any) => void) => void
       onLogMessage: (callback: (msg: string) => void) => void
       onConnectionSuccess: (callback: () => void) => void
+      getMachineInfo: () => Promise<MachineInfo>
     }
   }
 }

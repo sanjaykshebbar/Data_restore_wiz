@@ -24,6 +24,12 @@ export class BackupServer {
   private writeStream: fs.WriteStream | null = null
   private bytesReceivedForFile = 0
   private restoreRoot: string
+  
+  // Session progress
+  private sessionTotalFiles = 0
+  private sessionTotalBytes = 0
+  private sessionFilesProcessed = 0
+  private sessionBytesProcessed = 0
 
   constructor(window: BrowserWindow) {
     this.window = window
@@ -85,7 +91,18 @@ export class BackupServer {
                   this.buffer = this.buffer.subarray(len)
                   
                   try {
-                      this.currentHeader = JSON.parse(headerBuf.toString()) as FileHeader
+                      const headerData = JSON.parse(headerBuf.toString())
+                      if (headerData.type === 'SESSION_START') {
+                          this.sessionTotalFiles = headerData.totalFiles
+                          this.sessionTotalBytes = headerData.totalBytes
+                          this.sessionFilesProcessed = 0
+                          this.sessionBytesProcessed = 0
+                          this.state = ReceiveState.READING_HEADER_LEN
+                          this.emitProgress()
+                          continue
+                      }
+
+                      this.currentHeader = headerData as FileHeader
                       console.log(`Receiving: ${this.currentHeader.viewPath} (${this.currentHeader.size} bytes)`)
                       
                       const targetPath = path.join(this.restoreRoot, this.currentHeader.viewPath)
@@ -123,6 +140,8 @@ export class BackupServer {
 
               this.writeStream?.write(chunk)
               this.bytesReceivedForFile += chunkLen
+              this.sessionBytesProcessed += chunkLen
+              this.emitProgress()
 
               if (this.bytesReceivedForFile === this.currentHeader.size) {
                   this.finishFile()
@@ -138,8 +157,22 @@ export class BackupServer {
           this.writeStream.end()
           this.writeStream = null
       }
+      this.sessionFilesProcessed++
       this.state = ReceiveState.READING_HEADER_LEN
       this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Restored: ${this.currentHeader?.viewPath}`)
+      this.emitProgress()
+  }
+
+  private emitProgress() {
+      const status: TransferStatus = {
+          currentFile: this.currentHeader?.viewPath || 'Initializing...',
+          totalFiles: this.sessionTotalFiles,
+          filesProcessed: this.sessionFilesProcessed,
+          totalBytes: this.sessionTotalBytes,
+          bytesProcessed: this.sessionBytesProcessed,
+          speed: 0 // Not calculating speed for now
+      }
+      this.window?.webContents.send(IPC_CHANNELS.TRANSFER_PROGRESS, status)
   }
 
   public start() {

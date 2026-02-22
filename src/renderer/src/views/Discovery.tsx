@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Monitor, ArrowRight } from 'lucide-react';
+import { Search, Monitor, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Peer {
@@ -41,7 +41,14 @@ const Discovery = () => {
     };
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full relative pt-10">
+            <button
+                onClick={() => navigate('/')}
+                className="absolute top-0 left-0 flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            >
+                <ArrowLeft size={20} />
+                <span>Back</span>
+            </button>
             <div className="flex items-center space-x-4 mb-6">
                 <div className="p-3 bg-purple-500/10 rounded-lg">
                     <Search className={`text-purple-400 ${searching ? 'animate-pulse' : ''}`} />

@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ServerWait = () => {
+    const navigate = useNavigate();
     useEffect(() => {
         window.api.startServer();
     }, []);
 
     return (
-        <div className="flex flex-col items-center justify-center space-y-6 py-20">
+        <div className="relative flex flex-col items-center justify-center space-y-6 py-20">
+            <button
+                onClick={() => navigate('/')}
+                className="absolute top-0 left-0 flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            >
+                <ArrowLeft size={20} />
+                <span>Back</span>
+            </button>
             <div className="relative">
                 <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full animate-pulse"></div>
                 <Loader2 size={64} className="text-blue-400 animate-spin relative z-10" />
