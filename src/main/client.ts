@@ -13,6 +13,7 @@ export class BackupClient {
   private filesProcessed = 0
   private totalFiles = 0
   private startTime = 0
+  public backingUp = false
 
   constructor(window: BrowserWindow) {
     this.window = window
@@ -43,12 +44,18 @@ export class BackupClient {
   }
 
   public async startBackup(appData: any[], folders: any[]) {
+      if (this.backingUp) {
+          console.warn('Backup already in progress, skipping.')
+          return
+      }
       if (!this.socket) {
           console.error('No connection')
           return
       }
 
-      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Starting backup process...')
+      this.backingUp = true
+      try {
+          this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Starting backup process...')
       
       const fileList: { original: string, relative: string }[] = []
       this.totalBytes = 0
@@ -103,14 +110,29 @@ export class BackupClient {
 
       console.log('Backup complete')
       this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Backup completed successfully!')
+      this.backingUp = false
+  } catch (err) {
+      console.error('Backup failed:', err)
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Backup failed: ${err instanceof Error ? err.message : String(err)}`)
+      this.backingUp = false
+  }
   }
 
   private async sendFile(filePath: string, relativePath: string): Promise<void> {
       return new Promise((resolve, reject) => {
           if (!this.socket) return reject('No socket')
 
+          // Use synchronously to check if we can even start reading
+          // This avoids sending headers for files we can't read
+          try {
+              fs.accessSync(filePath, fs.constants.R_OK)
+          } catch (e) {
+              console.warn(`Cannot read ${filePath}, skipping...`)
+              return resolve()
+          }
+
           fs.stat(filePath, (err, stats) => {
-              if (err) return resolve() // Skip error files
+              if (err || !stats.isFile()) return resolve() 
               
               const header: FileHeader = {
                   viewPath: relativePath,

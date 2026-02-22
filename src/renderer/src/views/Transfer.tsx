@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Loader2, ArrowRightCircle } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
@@ -16,10 +16,14 @@ const Transfer = () => {
     const [logs, setLogs] = useState<string[]>([]);
     const location = useLocation();
 
+    const started = useRef(false);
+
     useEffect(() => {
         // If we just arrived here, start the backup if this is sender
         const start = async () => {
+            if (started.current) return;
             if (location.state?.apps || location.state?.folders) {
+                started.current = true;
                 await window.api.startBackup(location.state.apps, location.state.folders);
             }
         };
