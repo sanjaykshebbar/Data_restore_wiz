@@ -43,7 +43,7 @@ export class ScannerService {
       try {
         const stats = await fs.stat(folderPath)
         if (stats.isDirectory()) {
-          const size = await this.calculateDirSize(folderPath)
+          const size = await this.calculateDirSize(folderPath, 0, 2)
           results.push({
             name: folder,
             path: folderPath,
@@ -106,7 +106,7 @@ export class ScannerService {
                 const itemPath = path.join(base, item)
                 const stats = await fs.stat(itemPath)
                 if (stats.isDirectory()) {
-                     const size = await this.calculateDirSize(itemPath)
+                     const size = await this.calculateDirSize(itemPath, 0, 1)
                      if (size > 1024 * 1024) { // Only show > 1MB
                          apps.push({
                              name: `${item} (${type})`,
@@ -128,17 +128,21 @@ export class ScannerService {
     return apps
   }
 
-  private async calculateDirSize(dirPath: string): Promise<number> {
+  private async calculateDirSize(dirPath: string, depth: number = 0, maxDepth: number = 2): Promise<number> {
+    if (depth > maxDepth) return 0
+    
     let size = 0
     try {
-      const files = await fs.readdir(dirPath)
-      for (const file of files) {
-        const filePath = path.join(dirPath, file)
-        const stats = await fs.stat(filePath)
-        if (stats.isDirectory()) {
-          size += await this.calculateDirSize(filePath)
+      const items = await fs.readdir(dirPath, { withFileTypes: true })
+      for (const item of items) {
+        const itemPath = path.join(dirPath, item.name)
+        if (item.isDirectory()) {
+          size += await this.calculateDirSize(itemPath, depth + 1, maxDepth)
         } else {
-          size += stats.size
+          try {
+            const stats = await fs.stat(itemPath)
+            size += stats.size
+          } catch (e) { /* ignore */ }
         }
       }
     } catch (error) {
