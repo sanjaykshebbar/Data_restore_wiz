@@ -134,17 +134,24 @@ export class ScannerService {
     let size = 0
     try {
       const items = await fs.readdir(dirPath, { withFileTypes: true })
-      for (const item of items) {
+      
+      const promises = items.map(async (item) => {
         const itemPath = path.join(dirPath, item.name)
         if (item.isDirectory()) {
-          size += await this.calculateDirSize(itemPath, depth + 1, maxDepth)
-        } else {
+          return await this.calculateDirSize(itemPath, depth + 1, maxDepth)
+        } else if (item.isFile()) {
           try {
             const stats = await fs.stat(itemPath)
-            size += stats.size
-          } catch (e) { /* ignore */ }
+            return stats.size
+          } catch (e) {
+            return 0
+          }
         }
-      }
+        return 0
+      })
+      
+      const sizes = await Promise.all(promises)
+      size = sizes.reduce((acc, curr) => acc + curr, 0)
     } catch (error) {
       // Ignore access errors
     }

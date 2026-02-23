@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { HardDrive, Folder, Check, Loader2 } from 'lucide-react';
+import { HardDrive, Folder, Check, Loader2, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface AppData {

@@ -67,11 +67,11 @@ export class BackupClient {
         try {
             const stats = await fsPromises.stat(itemPath)
             if (stats.isDirectory()) {
-                const children = await fsPromises.readdir(itemPath)
-                for (const child of children) {
-                    await processItem(path.join(itemPath, child), rootPath, rootName)
-                }
-            } else {
+                const children = await fsPromises.readdir(itemPath, { withFileTypes: true })
+                await Promise.all(children.map(child => 
+                    processItem(path.join(itemPath, child.name), rootPath, rootName)
+                ))
+            } else if (stats.isFile()) {
                 const relative = path.join(rootName, path.relative(rootPath, itemPath))
                 fileList.push({ original: itemPath, relative })
                 this.totalBytes += stats.size
