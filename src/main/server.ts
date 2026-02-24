@@ -149,9 +149,26 @@ export class BackupServer {
                           fs.mkdirSync(targetDir, { recursive: true })
                       }
                       
-                      this.writeStream = fs.createWriteStream(targetPath)
-                      this.bytesReceivedForFile = 0
-                      this.state = ReceiveState.READING_FILE
+                      try {
+                          this.writeStream = fs.createWriteStream(targetPath)
+                          this.writeStream.on('error', (err: any) => {
+                              console.error(`Stream error for ${targetPath}:`, err)
+                              this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Error writing ${this.currentHeader?.viewPath}: ${err.message}`)
+                              // If stream fails, we move to READ_HEADER_LEN to try next file
+                              if (this.state === ReceiveState.READING_FILE) {
+                                  this.finishFile() 
+                              }
+                          })
+                          this.bytesReceivedForFile = 0
+                          this.state = ReceiveState.READING_FILE
+                      } catch (err: any) {
+                          console.error(`Create stream failed for ${targetPath}:`, err)
+                          this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Permission denied: ${this.currentHeader?.viewPath}`)
+                          // Skip this file and wait for next header
+                          this.state = ReceiveState.READING_HEADER_LEN
+                          this.sessionFilesProcessed++
+                          this.emitProgress()
+                      }
                   } catch (e) {
                       console.error('Header parse error', e)
                       this.state = ReceiveState.READING_HEADER_LEN 

@@ -109,6 +109,10 @@ export class BackupClient {
                     processItem(path.join(itemPath, child.name), rootPath, rootName)
                 ))
             } else if (stats.isFile()) {
+                const fileName = path.basename(itemPath).toLowerCase()
+                if (fileName === 'desktop.ini' || fileName === '.ds_store') {
+                   return
+                }
                 const relative = path.join(rootName, path.relative(rootPath, itemPath))
                 fileList.push({ original: itemPath, relative })
                 this.totalBytes += stats.size
