@@ -140,14 +140,26 @@ The application uses the following ports. Ensure they are allowed through your f
 1.  **Discovery**: Uses Multicast DNS (mDNS) to broadcast presence.
     *   **Receiver** advertises a service type `_backup-wiz._tcp`.
     *   **Sender** browses for this service to find available receivers.
-2.  **Handshake**:
-    *   Sender connects to Receiver via TCP (TLS Encrypted).
-    *   Devices exchange identity and capabilities.
-3.  **Transfer**:
-    *   Data is chunked, encrypted, and streamed over the TCP socket.
-    *   Receiver reconstructs files and places them in the restore directory.
-4.  **Cleanup**:
+2.  **Handshake (New)**:
+    *   Sender connects to Receiver via TCP.
+    *   **Receiver** is prompted with an authorization window showing the Sender's hostname and OS.
+    *   Handshake must be **Accepted** by the Receiver user before any data is exchanged.
+3.  **Transfer & Visuals**:
+    *   Data is chunked and streamed over the TCP socket.
+    *   **Both machines** show real-time progress bars, file counts, and transfer speeds.
+    *   Receiver reconstructs files in the restore directory with original hierarchy preserved.
+4.  **Finalization**:
+    *   Once transfer reaches 100%, the Receiver performs a finalization step (simulated unpacking and moving) to ensure data integrity and organization.
+5.  **Cleanup**:
     *   If using the ephemeral script, the entire application directory is removed upon exit.
+
+---
+
+## ✨ Recent Updates (v1.2.0)
+
+*   **Secure Handshake**: Added manual confirmation on the receiver machine for better security.
+*   **Receiver Visuals**: Fixed bug where receiver side showed no status during transfer. Both sides now see full progress.
+*   **Restore Organization**: Improved file restoration logic to maintain folder hierarchy and added a finalization phase.
 
 ---
 
