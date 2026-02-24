@@ -23,6 +23,11 @@ const api = {
   onConnectionSuccess: (callback: () => void): void => {
     ipcRenderer.on(IPC_CHANNELS.CONNECTION_SUCCESS, () => callback())
   },
+  onHandshakeRequest: (callback: (data: any) => void): void => {
+    ipcRenderer.on(IPC_CHANNELS.HANDSHAKE_REQUEST, (_, data) => callback(data))
+  },
+  acceptHandshake: (): void => ipcRenderer.send(IPC_CHANNELS.ACCEPT_HANDSHAKE),
+  declineHandshake: (): void => ipcRenderer.send(IPC_CHANNELS.DECLINE_HANDSHAKE),
   getMachineInfo: () => ipcRenderer.invoke(IPC_CHANNELS.GET_MACHINE_INFO),
 }
 

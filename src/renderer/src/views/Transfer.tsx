@@ -15,6 +15,7 @@ const Transfer = () => {
     const [status, setStatus] = useState<TransferStatus | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
     const location = useLocation();
+    const isReceiver = location.state?.isReceiver || false;
 
     const started = useRef(false);
 
@@ -22,7 +23,7 @@ const Transfer = () => {
         // If we just arrived here, start the backup if this is sender
         const start = async () => {
             if (started.current) return;
-            if (location.state?.apps || location.state?.folders) {
+            if (!isReceiver && (location.state?.apps || location.state?.folders)) {
                 started.current = true;
                 await window.api.startBackup(location.state.apps, location.state.folders);
             }
@@ -54,7 +55,7 @@ const Transfer = () => {
             <div className="flex items-center space-x-4">
                 <ArrowRightCircle className="animate-pulse text-green-400" size={32} />
                 <div>
-                    <h2 className="text-2xl font-bold">Transferring Data...</h2>
+                    <h2 className="text-2xl font-bold">{isReceiver ? 'Receiving Data...' : 'Transferring Data...'}</h2>
                     <p className="text-gray-400">Please do not close the application.</p>
                 </div>
             </div>

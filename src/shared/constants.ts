@@ -12,6 +12,10 @@ export const IPC_CHANNELS = {
   CONNECTION_SUCCESS: 'connection-success',
   GET_MACHINE_INFO: 'get-machine-info',
   SESSION_START: 'session-start',
+  HANDSHAKE_REQUEST: 'handshake-request',
+  HANDSHAKE_RESPONSE: 'handshake-response',
+  ACCEPT_HANDSHAKE: 'accept-handshake',
+  DECLINE_HANDSHAKE: 'decline-handshake',
 };
 
 export interface FileHeader {
@@ -35,6 +39,7 @@ export interface TransferStatus {
   totalBytes: number;
   bytesProcessed: number;
   speed: number; // bytes per second
+  isReceiver?: boolean;
 }
 
 export interface MachineInfo {

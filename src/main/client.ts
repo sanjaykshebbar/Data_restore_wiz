@@ -3,6 +3,7 @@ import { BrowserWindow } from 'electron'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
+import os from 'os'
 import { FileHeader, IPC_CHANNELS, TransferStatus } from '../shared/constants'
 
 export class BackupClient {
@@ -23,13 +24,49 @@ export class BackupClient {
     this.socket = new net.Socket()
     
     this.socket.connect(port, ip, () => {
-      console.log('Connected to server')
-      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Connected to receiver at ${ip}`)
-      this.window?.webContents.send(IPC_CHANNELS.CONNECTION_SUCCESS)
+      console.log('Connected to server, sending handshake...')
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Connected to receiver at ${ip}, waiting for approval...`)
+      
+      const handshake = {
+          type: 'HANDSHAKE_REQUEST',
+          hostname: os.hostname(),
+          os: os.platform()
+      }
+      const buf = Buffer.from(JSON.stringify(handshake))
+      const lenBuf = Buffer.alloc(4)
+      lenBuf.writeUInt32BE(buf.length, 0)
+      this.socket?.write(lenBuf)
+      this.socket?.write(buf)
     })
 
+    let buffer = Buffer.alloc(0)
     this.socket.on('data', (data) => {
-       console.log('Received from server:', data.toString())
+       buffer = Buffer.concat([buffer, data])
+       
+       while (buffer.length >= 4) {
+           const len = buffer.readUInt32BE(0)
+           if (buffer.length >= 4 + len) {
+               const headerBuf = buffer.subarray(4, 4 + len)
+               buffer = buffer.subarray(4 + len)
+               
+               try {
+                   const response = JSON.parse(headerBuf.toString())
+                   if (response.type === 'HANDSHAKE_RESPONSE') {
+                       if (response.status === 'ACCEPTED') {
+                           this.window?.webContents.send(IPC_CHANNELS.CONNECTION_SUCCESS)
+                           this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Receiver accepted connection.')
+                       } else {
+                           this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Receiver declined connection.')
+                           this.socket?.destroy()
+                       }
+                   }
+               } catch (e) {
+                   console.error('Handshake response parse error', e)
+               }
+           } else {
+               break
+           }
+       }
     })
 
     this.socket.on('close', () => {

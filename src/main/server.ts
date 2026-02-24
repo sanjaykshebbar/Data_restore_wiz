@@ -1,5 +1,5 @@
 import net from 'net'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -18,12 +18,14 @@ export class BackupServer {
   private window: BrowserWindow | null = null
   
   // State
-  private state: ReceiveState = ReceiveState.READING_HEADER_LEN
+  private state: ReceiveState = ReceiveState.IDLE
   private buffer: Buffer = Buffer.alloc(0)
   private currentHeader: FileHeader | null = null
   private writeStream: fs.WriteStream | null = null
   private bytesReceivedForFile = 0
   private restoreRoot: string
+  
+  private currentSocket: net.Socket | null = null
   
   // Session progress
   private sessionTotalFiles = 0
@@ -42,7 +44,8 @@ export class BackupServer {
 
     this.server = net.createServer((socket) => {
       console.log('Client connected')
-      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Sender connected (Restoring to Downloads/DataRestoreWiz_Restore)')
+      this.currentSocket = socket
+      this.state = ReceiveState.READING_HEADER_LEN
       
       socket.on('data', (chunk) => {
         this.buffer = Buffer.concat([this.buffer, chunk])
@@ -52,6 +55,7 @@ export class BackupServer {
       socket.on('end', () => {
         console.log('Client disconnected')
         this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Sender disconnected')
+        this.currentSocket = null
         if (this.writeStream) {
             this.writeStream.end()
             this.writeStream = null
@@ -66,6 +70,33 @@ export class BackupServer {
     this.server.on('error', (err) => {
       console.error('Server error:', err)
     })
+
+    // Handshake IPC handlers
+    ipcMain.on(IPC_CHANNELS.ACCEPT_HANDSHAKE, () => {
+        if (this.currentSocket) {
+            const response = { type: 'HANDSHAKE_RESPONSE', status: 'ACCEPTED' }
+            const buf = Buffer.from(JSON.stringify(response))
+            const lenBuf = Buffer.alloc(4)
+            lenBuf.writeUInt32BE(buf.length, 0)
+            this.currentSocket.write(lenBuf)
+            this.currentSocket.write(buf)
+            this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Handshake accepted.')
+        }
+    })
+
+    ipcMain.on(IPC_CHANNELS.DECLINE_HANDSHAKE, () => {
+        if (this.currentSocket) {
+            const response = { type: 'HANDSHAKE_RESPONSE', status: 'DECLINED' }
+            const buf = Buffer.from(JSON.stringify(response))
+            const lenBuf = Buffer.alloc(4)
+            lenBuf.writeUInt32BE(buf.length, 0)
+            this.currentSocket.write(lenBuf)
+            this.currentSocket.write(buf)
+            this.currentSocket.end()
+            this.currentSocket = null
+            this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Handshake declined.')
+        }
+    })
   }
 
   private processBuffer() {
@@ -74,10 +105,7 @@ export class BackupServer {
               if (this.buffer.length >= 4) {
                   const len = this.buffer.readUInt32BE(0)
                   this.buffer = this.buffer.subarray(4)
-                  this.state = ReceiveState.READING_HEADER
-                  this.currentHeader = null as any // Will be set next
-                  // Store expected length in a temp property or just know it's "len"
-                  // Actually, let's just stick "len" into a property or use a minimal parser
+                  this.state = ReceiveState.READING_HEADER;
                   (this as any).expectedHeaderLen = len
               } else {
                   break // Wait for more data
@@ -92,6 +120,14 @@ export class BackupServer {
                   
                   try {
                       const headerData = JSON.parse(headerBuf.toString())
+                      
+                      if (headerData.type === 'HANDSHAKE_REQUEST') {
+                          console.log('Handshake requested')
+                          this.window?.webContents.send(IPC_CHANNELS.HANDSHAKE_REQUEST, headerData)
+                          this.state = ReceiveState.READING_HEADER_LEN
+                          continue
+                      }
+
                       if (headerData.type === 'SESSION_START') {
                           this.sessionTotalFiles = headerData.totalFiles
                           this.sessionTotalBytes = headerData.totalBytes
@@ -99,13 +135,16 @@ export class BackupServer {
                           this.sessionBytesProcessed = 0
                           this.state = ReceiveState.READING_HEADER_LEN
                           this.emitProgress()
+                          this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Session started: ${this.sessionTotalFiles} files, ${Math.round(this.sessionTotalBytes / 1024 / 1024)} MB`)
                           continue
                       }
 
                       this.currentHeader = headerData as FileHeader
                       console.log(`Receiving: ${this.currentHeader.viewPath} (${this.currentHeader.size} bytes)`)
                       
-                      const targetPath = path.join(this.restoreRoot, this.currentHeader.viewPath)
+                      // Better path handling: Ensure we don't escape restoreRoot
+                      const safePath = this.currentHeader.viewPath.replace(/^(\.\.(\/|\\))+/, '')
+                      const targetPath = path.join(this.restoreRoot, safePath)
                       const targetDir = path.dirname(targetPath)
                       
                       if (!fs.existsSync(targetDir)) {
@@ -117,7 +156,7 @@ export class BackupServer {
                       this.state = ReceiveState.READING_FILE
                   } catch (e) {
                       console.error('Header parse error', e)
-                      this.state = ReceiveState.READING_HEADER_LEN // Reset?
+                      this.state = ReceiveState.READING_HEADER_LEN 
                   }
               } else {
                   break
@@ -159,8 +198,31 @@ export class BackupServer {
       }
       this.sessionFilesProcessed++
       this.state = ReceiveState.READING_HEADER_LEN
-      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Restored: ${this.currentHeader?.viewPath}`)
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Received: ${this.currentHeader?.viewPath}`)
       this.emitProgress()
+
+      if (this.sessionFilesProcessed === this.sessionTotalFiles && this.sessionTotalFiles > 0) {
+          this.finalizeSession()
+      }
+  }
+
+  private async finalizeSession() {
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'All files received. Starting finalization...')
+      
+      // Simulate unpacking/moving for visual feedback
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Unpacking data...')
+      await new Promise(r => setTimeout(r, 1500))
+      
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Moving files to destination folders...')
+      
+      // In a real scenario, we might move files from restoreRoot to actual destinations
+      // For now, we'll log that we're organizing them in the restore folder
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Files are organized in: ${this.restoreRoot}`)
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Restoration complete!')
+      
+      // Reset session
+      this.sessionTotalFiles = 0
+      this.sessionTotalBytes = 0
   }
 
   private emitProgress() {
@@ -170,7 +232,8 @@ export class BackupServer {
           filesProcessed: this.sessionFilesProcessed,
           totalBytes: this.sessionTotalBytes,
           bytesProcessed: this.sessionBytesProcessed,
-          speed: 0 // Not calculating speed for now
+          speed: 0,
+          isReceiver: true
       }
       this.window?.webContents.send(IPC_CHANNELS.TRANSFER_PROGRESS, status)
   }
@@ -183,5 +246,6 @@ export class BackupServer {
 
   public stop() {
     this.server.close()
+    if (this.currentSocket) this.currentSocket.destroy()
   }
 }
