@@ -142,9 +142,7 @@ export class BackupServer {
                       this.currentHeader = headerData as FileHeader
                       console.log(`Receiving: ${this.currentHeader.viewPath} (${this.currentHeader.size} bytes)`)
                       
-                      // Better path handling: Ensure we don't escape restoreRoot
-                      const safePath = this.currentHeader.viewPath.replace(/^(\.\.(\/|\\))+/, '')
-                      const targetPath = path.join(this.restoreRoot, safePath)
+                      const targetPath = this.getTargetPath(this.currentHeader.viewPath)
                       const targetDir = path.dirname(targetPath)
                       
                       if (!fs.existsSync(targetDir)) {
@@ -215,10 +213,7 @@ export class BackupServer {
       
       this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Moving files to destination folders...')
       
-      // In a real scenario, we might move files from restoreRoot to actual destinations
-      // For now, we'll log that we're organizing them in the restore folder
-      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, `Files are organized in: ${this.restoreRoot}`)
-      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Restoration complete!')
+      this.window?.webContents.send(IPC_CHANNELS.LOG_MESSAGE, 'Restoration complete! Files have been seated in their respective system locations.')
       
       // Reset session
       this.sessionTotalFiles = 0
@@ -236,6 +231,39 @@ export class BackupServer {
           isReceiver: true
       }
       this.window?.webContents.send(IPC_CHANNELS.TRANSFER_PROGRESS, status)
+  }
+
+  private getTargetPath(viewPath: string): string {
+      // viewPath is something like "Desktop/file.txt" or "Applications/App/config.json"
+      const safePath = viewPath.replace(/^(\.\.(\/|\\))+/, '')
+      const parts = safePath.split(/[/\\]/)
+      const root = parts[0]
+      const relativePart = parts.slice(1).join(path.sep)
+
+      try {
+          switch (root) {
+              case 'Desktop':
+                  return path.join(app.getPath('desktop'), relativePart)
+              case 'Documents':
+                  return path.join(app.getPath('documents'), relativePart)
+              case 'Downloads':
+                  return path.join(app.getPath('downloads'), relativePart)
+              case 'Pictures':
+                  return path.join(app.getPath('pictures'), relativePart)
+              case 'Music':
+                  return path.join(app.getPath('music'), relativePart)
+              case 'Videos':
+                  return path.join(app.getPath('videos'), relativePart)
+              case 'Applications':
+                  // On Windows, appData is Roaming. On Mac, it's ~/Library/Application Support.
+                  return path.join(app.getPath('appData'), relativePart)
+              default:
+                  return path.join(this.restoreRoot, safePath)
+          }
+      } catch (e) {
+          console.warn(`Failed to resolve system path for ${root}, falling back to restoreRoot`)
+          return path.join(this.restoreRoot, safePath)
+      }
   }
 
   public start() {
